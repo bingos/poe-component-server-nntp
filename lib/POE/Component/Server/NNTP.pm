@@ -8,7 +8,7 @@ use POE::Component::Pluggable::Constants qw(:ALL);
 use Socket;
 use vars qw($VERSION);
 
-$VERSION = '1.02';
+$VERSION = '1.04';
 
 sub spawn {
   my $package = shift;
@@ -525,7 +525,7 @@ complete NNTP daemon implementation.
 
 =over
 
-=item spawn
+=item C<spawn>
 
 Takes a number of optional arguments:
 
@@ -548,19 +548,19 @@ Returns a POE::Component::Server::NNTP object.
 
 =over
 
-=item session_id
+=item C<session_id>
 
 Returns the POE::Session ID of the component.
 
-=item shutdown
+=item C<shutdown>
 
 Terminates the component. Shuts down the listener and disconnects connected clients.
 
-=item send_event
+=item C<send_event>
 
 Sends an event through the component's event handling system. 
 
-=item send_to_client
+=item C<send_to_client>
 
 Send some output to a connected client. First parameter must be a valid client id. 
 Second parameter is a string of text to send.
@@ -573,26 +573,26 @@ These are events that the component will accept:
 
 =over
 
-=item register
+=item C<register>
 
 Takes N arguments: a list of event names that your session wants to listen for, minus the 'nntpd_' prefix, ( this is 
 similar to L<POE::Component::IRC> ). 
 
 Registering for 'all' will cause it to send all NNTPD-related events to you; this is the easiest way to handle it.
 
-=item unregister
+=item C<unregister>
 
 Takes N arguments: a list of event names which you don't want to receive. If you've previously done a 'register' for a particular event which you no longer care about, this event will tell the NNTPD to stop sending them to you. (If you haven't, it just ignores you. No big deal).
 
-=item shutdown
+=item C<shutdown>
 
 Terminates the component. Shuts down the listener and disconnects connected clients.
 
-=item send_event
+=item C<send_event>
 
 Sends an event through the component's event handling system. 
 
-=item send_to_client
+=item C<send_to_client>
 
 Send some output to a connected client. First parameter must be a valid client ID. 
 Second parameter is a string of text to send.
@@ -605,34 +605,34 @@ The component sends the following events to registered sessions:
 
 =over
 
-=item nntpd_registered
+=item C<nntpd_registered>
 
 This event is sent to a registering session. ARG0 is POE::Component::Server::NNTP
 object.
 
-=item nntpd_listener_failed
+=item C<nntpd_listener_failed>
 
 Generated if the component cannot either start a listener or there is a problem
 accepting client connections. ARG0 contains the name of the operation that failed. 
 ARG1 and ARG2 hold numeric and string values for $!, respectively.
 
-=item nntpd_connection
+=item C<nntpd_connection>
 
 Generated whenever a client connects to the component. ARG0 is the client ID, ARG1
 is the client's IP address, ARG2 is the client's TCP port. ARG3 is our IP address and
 ARG4 is our socket port.
 
-=item nntpd_disconnected
+=item C<nntpd_disconnected>
 
 Generated whenever a client disconnects. ARG0 is the client ID.
 
-=item nntpd_cmd_*
+=item C<nntpd_cmd_*>
 
 Generated for each NNTP command that a connected client sends to us. ARG0 is the 
 client ID. ARG1 .. ARGn are any parameters that are sent with the command. Check 
 the RFC L<http://www.faqs.org/rfcs/rfc977.html> for details.
 
-=item nntpd_posting
+=item C<nntpd_posting>
 
 When the component receives a posting from a client, either as the result of a IHAVE
 or POST command, this event is issued. ARG0 will be the client ID. ARG1 will be either
@@ -653,12 +653,12 @@ There are two types of handlers that can registered for by plugins, these are
 
 =over
 
-=item NNTPD
+=item C<NNTPD>
 
 These are the 'nntpd_' prefixed events that are generated. In a handler arguments are
 passed as scalar refs so that you may mangle the values if required.
 
-=item NNTPC
+=item C<NNTPC>
 
 These are generated whenever a response is sent to a client. Again, any 
 arguments passed are scalar refs for manglement. There is really on one type
@@ -678,23 +678,23 @@ The return values have the following significance:
 
 =over 
 
-=item NNTPD_EAT_NONE
+=item C<NNTPD_EAT_NONE>
 
 This means the event will continue to be processed by remaining plugins and
 finally, sent to interested sessions that registered for it.
 
-=item NNTP_EAT_CLIENT
+=item C<NNTP_EAT_CLIENT>
 
 This means the event will continue to be processed by remaining plugins but
 it will not be sent to any sessions that registered for it. This means nothing
 will be sent out on the wire if it was an NNTPC event, beware!
 
-=item NNTPD_EAT_PLUGIN
+=item C<NNTPD_EAT_PLUGIN>
 
 This means the event will not be processed by remaining plugins, it will go
 straight to interested sessions.
 
-=item NNTPD_EAT_ALL
+=item C<NNTPD_EAT_ALL>
 
 This means the event will be completely discarded, no plugin or session will see it. This
 means nothing will be sent out on the wire if it was an NNTPC event, beware!
@@ -707,11 +707,11 @@ The following methods are available:
 
 =over
 
-=item pipeline
+=item C<pipeline>
 
 Returns the L<POE::Component::Pluggable::Pipeline> object.
 
-=item plugin_add
+=item C<plugin_add>
 
 Accepts two arguments:
 
@@ -728,7 +728,7 @@ This method goes through the pipeline's push() method.
 Returns the number of plugins now in the pipeline if plugin was initialized, undef
 if not.
 
-=item plugin_del
+=item C<plugin_del>
 
 Accepts one argument:
 
@@ -740,7 +740,7 @@ This method will call $plugin->plugin_unregister( $nntpd )
 
 Returns the plugin object if the plugin was removed, undef if not.
 
-=item plugin_get
+=item C<plugin_get>
 
 Accepts one argument:
 
@@ -750,21 +750,21 @@ This method goes through the pipeline's get() method.
 
 Returns the plugin object if it was found, undef if not.
 
-=item plugin_list
+=item C<plugin_list>
 
 Has no arguments.
 
 Returns a hashref of plugin objects, keyed on alias, or an empty list if there are no
 plugins loaded.
 
-=item plugin_order
+=item C<plugin_order>
 
 Has no arguments.
 
 Returns an arrayref of plugin objects, in the order which they are encountered in the
 pipeline.
 
-=item plugin_register
+=item C<plugin_register>
 
 Accepts the following arguments:
 
@@ -781,7 +781,7 @@ It is possible to register for all events by specifying 'all' as an event.
 
 Returns 1 if everything checked out fine, undef if something's seriously wrong
 
-=item plugin_unregister
+=item C<plugin_unregister>
 
 Accepts the following arguments:
 
@@ -853,7 +853,7 @@ Chris C<BinGOs> Williams <chris@bingosnet.co.uk>
 
 =head1 LICENSE
 
-Copyright L<(c)> Chris Williams
+Copyright E<copy> Chris Williams
 
 This module may be used, modified, and distributed under the same terms as Perl itself. Please see the license that came with your Perl distribution for details.
 
@@ -866,3 +866,5 @@ RFC 977 L<http://www.faqs.org/rfcs/rfc977.html>
 RFC 1036 L<http://www.faqs.org/rfcs/rfc1036.html>
 
 L<POE::Component::Pluggable>
+
+=cut

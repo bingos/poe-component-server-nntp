@@ -1,6 +1,9 @@
 POE::Component::Server::NNTP
 ============================
 
+1.04	Wed Jun 24 12:18:19 BST 2009
+	- Tidied POD and added Makefile.PL meta
+
 1.02	Tue Sep 16 16:48:22 BST 2008
 	- Small bug squashed, spotted by Dave Golden.
 

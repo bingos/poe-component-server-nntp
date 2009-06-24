@@ -9,7 +9,7 @@ use strict;
 use warnings;
 use vars qw($VERSION);
 
-$VERSION = '1.00';
+$VERSION = '1.04';
 
 # Our constants
 sub NNTPD_EAT_NONE	() { 1 }
@@ -36,19 +36,19 @@ POE::Component::Server::NNTP::Constants defines a number of constants that are r
 
 =over
 
-=item NNTPD_EAT_NONE
+=item C<NNTPD_EAT_NONE>
 
 Value: 1
 
-=item NNTPD_EAT_CLIENT
+=item C<NNTPD_EAT_CLIENT>
 
 Value: 2
 
-=item NNTPD_EAT_PLUGIN
+=item C<NNTPD_EAT_PLUGIN>
 
 Value: 3
 
-=item NNTPD_EAT_ALL
+=item C<NNTPD_EAT_ALL>
 
 Value: 4
 
@@ -60,10 +60,12 @@ Chris 'BinGOs' Williams <chris@bingosnet.co.uk>
 
 =head1 LICENSE
 
-Copyright L<(c)> Chris Williams
+Copyright E<copy> Chris Williams
 
 This module may be used, modified, and distributed under the same terms as Perl itself. Please see the license that came with your Perl distribution for details.
 
 =head1 SEE ALSO
 
 L<POE::Component::Server::NNTP>
+
+=cut

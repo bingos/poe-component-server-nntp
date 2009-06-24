@@ -1,0 +1,1 @@
+^(?!bin/|examples/|lib/|inc/|t/|xt/|Makefile.PL$|README$|MANIFEST$|Changes$|META.yml$)
