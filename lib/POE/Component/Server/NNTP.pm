@@ -1,14 +1,13 @@
 package POE::Component::Server::NNTP;
 
+# ABSTRACT: A POE component that provides NNTP server functionality.
+
 use strict;
 use warnings;
 use POE qw(Component::Client::NNTP Wheel::SocketFactory Wheel::ReadWrite Filter::Line);
 use base qw(POE::Component::Pluggable);
 use POE::Component::Pluggable::Constants qw(:ALL);
 use Socket;
-use vars qw($VERSION);
-
-$VERSION = '1.04';
 
 sub spawn {
   my $package = shift;
@@ -42,7 +41,7 @@ sub session_id {
 sub _conn_exists {
   my ($self,$wheel_id) = @_;
   return 0 unless $wheel_id and defined $self->{clients}->{ $wheel_id };
-  return 1; 
+  return 1;
 }
 
 sub _valid_cmd {
@@ -63,7 +62,7 @@ sub _start {
   $self->{session_id} = $_[SESSION]->ID();
   if ( $self->{alias} ) {
 	$kernel->alias_set( $self->{alias} );
-  } 
+  }
   else {
 	$kernel->refcount_increment( $self->{session_id} => __PACKAGE__ );
   }
@@ -109,11 +108,11 @@ sub _accept_client {
   );
 
   return unless $wheel;
-  
+
   my $id = $wheel->ID();
-  $self->{clients}->{ $id } = 
-  { 
-				wheel    => $wheel, 
+  $self->{clients}->{ $id } =
+  {
+				wheel    => $wheel,
 				peeraddr => $peeraddr,
 				peerport => $peerport,
 				sockaddr => $sockaddr,
@@ -269,7 +268,7 @@ sub _unregister_sessions {
   foreach my $session_id ( keys %{ $self->{sessions} } ) {
      if (--$self->{sessions}->{$session_id}->{refcnt} <= 0) {
         delete $self->{sessions}->{$session_id};
-	$poe_kernel->refcount_decrement($session_id, __PACKAGE__) 
+	$poe_kernel->refcount_decrement($session_id, __PACKAGE__)
 		unless ( $session_id eq $nntpd_id );
      }
   }
@@ -351,30 +350,27 @@ sub NNTPC_response {
 }
 
 1;
-__END__
 
-=head1 NAME
-
-POE::Component::Server::NNTP - A POE component that provides NNTP server functionality.
+=pod
 
 =head1 SYNOPSIS
 
   use strict;
   use POE qw(Component::Server::NNTP);
-  
+
   my %groups;
-  
+
   while(<DATA>) {
     chomp;
     push @{ $groups{'perl.cpan.testers'}->{'<perl.cpan.testers-381062@nntp.perl.org>'} }, $_;
   }
-  
+
   my $nntpd = POE::Component::Server::NNTP->spawn( 
-  		alias   => 'nntpd', 
-  		posting => 0, 
+  		alias   => 'nntpd',
+  		posting => 0,
   		port    => 10119,
   );
-  
+
   POE::Session->create(
     package_states => [
   	'main' => [ qw(
@@ -393,61 +389,61 @@ POE::Component::Server::NNTP - A POE component that provides NNTP server functio
     ],
     options => { trace => 0 },
   );
-  
+
   $poe_kernel->run();
   exit 0;
-  
+
   sub _start {
     my ($kernel,$heap) = @_[KERNEL,HEAP];
     $heap->{clients} = { };
     $kernel->post( 'nntpd', 'register', 'all' );
     return;
   }
-  
+
   sub nntpd_connection {
     my ($kernel,$heap,$client_id) = @_[KERNEL,HEAP,ARG0];
     $heap->{clients}->{ $client_id } = { };
     return;
   }
-  
+
   sub nntpd_disconnected {
     my ($kernel,$heap,$client_id) = @_[KERNEL,HEAP,ARG0];
     delete $heap->{clients}->{ $client_id };
     return;
   }
-  
+
   sub nntpd_cmd_slave {
     my ($kernel,$sender,$client_id) = @_[KERNEL,SENDER,ARG0];
     $kernel->post( $sender, 'send_to_client', $client_id, '202 slave status noted' );
     return;
   }
-  
+
   sub nntpd_cmd_post {
     my ($kernel,$sender,$client_id) = @_[KERNEL,SENDER,ARG0];
     $kernel->post( $sender, 'send_to_client', $client_id, '440 posting not allowed' );
     return;
   }
-  
+
   sub nntpd_cmd_ihave {
     my ($kernel,$sender,$client_id) = @_[KERNEL,SENDER,ARG0];
     $kernel->post( $sender, 'send_to_client', $client_id, '435 article not wanted' );
     return;
   }
-  
+
   sub nntpd_cmd_newnews {
     my ($kernel,$sender,$client_id) = @_[KERNEL,SENDER,ARG0];
     $kernel->post( $sender, 'send_to_client', $client_id, '230 list of new articles follows' );
     $kernel->post( $sender, 'send_to_client', $client_id, '.' );
     return;
   }
-  
+
   sub nntpd_cmd_newgroups {
     my ($kernel,$sender,$client_id) = @_[KERNEL,SENDER,ARG0];
     $kernel->post( $sender, 'send_to_client', $client_id, '231 list of new newsgroups follows' );
     $kernel->post( $sender, 'send_to_client', $client_id, '.' );
     return;
   }
-  
+
   sub nntpd_cmd_list {
     my ($kernel,$sender,$client_id) = @_[KERNEL,SENDER,ARG0];
     $kernel->post( $sender, 'send_to_client', $client_id, '215 list of newsgroups follows' );
@@ -458,7 +454,7 @@ POE::Component::Server::NNTP - A POE component that provides NNTP server functio
     $kernel->post( $sender, 'send_to_client', $client_id, '.' );
     return;
   }
-  
+
   sub nntpd_cmd_group {
     my ($kernel,$sender,$client_id,$group) = @_[KERNEL,SENDER,ARG0,ARG1];
     unless ( $group or exists $groups{lc $group} ) { 
@@ -470,7 +466,7 @@ POE::Component::Server::NNTP - A POE component that provides NNTP server functio
     $_[HEAP]->{clients}->{ $client_id } = { group => $group };
     return;
   }
-  
+
   sub nntpd_cmd_article {
     my ($kernel,$sender,$client_id,$article) = @_[KERNEL,SENDER,ARG0,ARG1];
     my $group = 'perl.cpan.testers';
@@ -494,7 +490,7 @@ POE::Component::Server::NNTP - A POE component that provides NNTP server functio
     }
     return;
   }
-  
+
   __END__
   Newsgroups: perl.cpan.testers
   Path: nntp.perl.org
@@ -502,11 +498,20 @@ POE::Component::Server::NNTP - A POE component that provides NNTP server functio
   Subject: PASS POE-Component-IRC-5.14 cygwin-thread-multi-64int 1.5.21(0.15642)
   From: chris@bingosnet.co.uk
   Message-ID: <perl.cpan.testers-381062@nntp.perl.org>
-  
+
   This distribution has been tested as part of the cpan-testers
   effort to test as many new uploads to CPAN as possible.  See
   http://testers.cpan.org/
-  
+
+=pod
+
+=begin Pod::Coverage
+
+   NNTPC_response
+   NNTPD_connection
+
+=end Pod::Coverage
+
 =head1 DESCRIPTION
 
 POE::Component::Server::NNTP is a L<POE> component that implements an RFC 977
@@ -558,11 +563,11 @@ Terminates the component. Shuts down the listener and disconnects connected clie
 
 =item C<send_event>
 
-Sends an event through the component's event handling system. 
+Sends an event through the component's event handling system.
 
 =item C<send_to_client>
 
-Send some output to a connected client. First parameter must be a valid client id. 
+Send some output to a connected client. First parameter must be a valid client id.
 Second parameter is a string of text to send.
 
 =back
@@ -575,8 +580,8 @@ These are events that the component will accept:
 
 =item C<register>
 
-Takes N arguments: a list of event names that your session wants to listen for, minus the 'nntpd_' prefix, ( this is 
-similar to L<POE::Component::IRC> ). 
+Takes N arguments: a list of event names that your session wants to listen for, minus the 'nntpd_' prefix, ( this is
+similar to L<POE::Component::IRC> ).
 
 Registering for 'all' will cause it to send all NNTPD-related events to you; this is the easiest way to handle it.
 
@@ -590,11 +595,11 @@ Terminates the component. Shuts down the listener and disconnects connected clie
 
 =item C<send_event>
 
-Sends an event through the component's event handling system. 
+Sends an event through the component's event handling system.
 
 =item C<send_to_client>
 
-Send some output to a connected client. First parameter must be a valid client ID. 
+Send some output to a connected client. First parameter must be a valid client ID.
 Second parameter is a string of text to send.
 
 =back
@@ -613,7 +618,7 @@ object.
 =item C<nntpd_listener_failed>
 
 Generated if the component cannot either start a listener or there is a problem
-accepting client connections. ARG0 contains the name of the operation that failed. 
+accepting client connections. ARG0 contains the name of the operation that failed.
 ARG1 and ARG2 hold numeric and string values for $!, respectively.
 
 =item C<nntpd_connection>
@@ -628,8 +633,8 @@ Generated whenever a client disconnects. ARG0 is the client ID.
 
 =item C<nntpd_cmd_*>
 
-Generated for each NNTP command that a connected client sends to us. ARG0 is the 
-client ID. ARG1 .. ARGn are any parameters that are sent with the command. Check 
+Generated for each NNTP command that a connected client sends to us. ARG0 is the
+client ID. ARG1 .. ARGn are any parameters that are sent with the command. Check
 the RFC L<http://www.faqs.org/rfcs/rfc977.html> for details.
 
 =item C<nntpd_posting>
@@ -637,7 +642,7 @@ the RFC L<http://www.faqs.org/rfcs/rfc977.html> for details.
 When the component receives a posting from a client, either as the result of a IHAVE
 or POST command, this event is issued. ARG0 will be the client ID. ARG1 will be either
 a '335' or '340' indicating what the posting relates to ( either an IHAVE or POST ).
-ARG2 will be an arrayref containing the raw lines that the client sent us. No 
+ARG2 will be an arrayref containing the raw lines that the client sent us. No
 additional parsing is undertaken on this data.
 
 =back
@@ -645,11 +650,11 @@ additional parsing is undertaken on this data.
 =head1 PLUGINS
 
 POE::Component::Server::NNTP utilises L<POE::Component::Pluggable> to enable a
-L<POE::Component::IRC> type plugin system. 
+L<POE::Component::IRC> type plugin system.
 
 =head2 PLUGIN HANDLER TYPES
 
-There are two types of handlers that can registered for by plugins, these are 
+There are two types of handlers that can registered for by plugins, these are
 
 =over
 
@@ -660,7 +665,7 @@ passed as scalar refs so that you may mangle the values if required.
 
 =item C<NNTPC>
 
-These are generated whenever a response is sent to a client. Again, any 
+These are generated whenever a response is sent to a client. Again, any
 arguments passed are scalar refs for manglement. There is really on one type
 of this handler generated 'NNTPC_response'
 
@@ -669,14 +674,14 @@ of this handler generated 'NNTPC_response'
 =head2 PLUGIN EXIT CODES
 
 Plugin handlers should return a particular value depending on what action they wish
-to happen to the event. These values are available as constants which you can use 
+to happen to the event. These values are available as constants which you can use
 with the following line:
 
   use POE::Component::Server::NNTP::Constants qw(:ALL);
 
 The return values have the following significance:
 
-=over 
+=over
 
 =item C<NNTPD_EAT_NONE>
 
@@ -806,7 +811,7 @@ The basic anatomy of a plugin is:
 
         package Plugin;
 
-        # Import the constants, of course you could provide your own 
+        # Import the constants, of course you could provide your own
         # constants as long as they map correctly.
         use POE::Component::Server::NNTP::Constants qw( :ALL );
 
@@ -846,16 +851,6 @@ The basic anatomy of a plugin is:
                 # Return an exit code
                 return NNTPD_EAT_NONE;
         }
-
-=head1 AUTHOR
-
-Chris C<BinGOs> Williams <chris@bingosnet.co.uk>
-
-=head1 LICENSE
-
-Copyright E<copy> Chris Williams
-
-This module may be used, modified, and distributed under the same terms as Perl itself. Please see the license that came with your Perl distribution for details.
 
 =head1 SEE ALSO
 
